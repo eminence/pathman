@@ -1,11 +1,8 @@
-use term;
 use rustyline;
-use ::std::path::Path;
-use ::std::io::stdin;
-
+use std::path::Path;
 
 pub struct SimpleEditor {
-    vars: Vec<String>
+    vars: Vec<String>,
 }
 
 impl SimpleEditor {
@@ -15,17 +12,16 @@ impl SimpleEditor {
     pub fn run(mut self) -> Option<Vec<String>> {
         // we have 2 readline editors, one for path inputs, and one for everything else
 
-        let mut readline = rustyline::Editor::<()>::with_config(rustyline::Config::builder()
-            .auto_add_history(false)
-            .build());
+        let mut readline = rustyline::Editor::<()>::with_config(
+            rustyline::Config::builder().auto_add_history(false).build(),
+        );
 
-        let mut path_readline = rustyline::Editor::with_config(rustyline::Config::builder()
-            .auto_add_history(true)
-            .build());
+        let mut path_readline = rustyline::Editor::with_config(
+            rustyline::Config::builder().auto_add_history(true).build(),
+        );
 
         let c = rustyline::completion::FilenameCompleter::new();
         path_readline.set_helper(Some((c, ())));
-
 
         let mut msg: Option<&'static str> = None;
 
@@ -37,7 +33,7 @@ impl SimpleEditor {
                 let path = Path::new(&var);
                 let flags = match path.exists() {
                     true => "",
-                    false => "del"
+                    false => "del",
                 };
                 eprintln!("{: <5} {: >2}. {}", flags, idx, var);
             }
@@ -50,16 +46,18 @@ impl SimpleEditor {
 
             eprintln!();
             if self.vars.len() > 0 {
-                eprintln!("Edit/move entry: 0-{}.  New entry: n.  Save: s.  Quit: q", self.vars.len() - 1);
+                eprintln!(
+                    "Edit/move entry: 0-{}.  New entry: n.  Save: s.  Quit: q",
+                    self.vars.len() - 1
+                );
             } else {
                 eprintln!("New entry: n.  Quit: q");
-
             }
 
             match readline.readline("> ") {
                 Ok(s) => match s.trim() {
-                    "q" => { break }
-                    "s" => { return Some(self.vars) }
+                    "q" => break,
+                    "s" => return Some(self.vars),
                     "n" => {
                         eprintln!("Enter new path (or just press enter to cancel)");
                         match path_readline.readline(">> ") {
@@ -100,7 +98,10 @@ impl SimpleEditor {
                                             msg = Some("Entry has been deleted.");
                                         }
                                         "e" => {
-                                            match path_readline.readline_with_initial("edit> ", (&self.vars[num].as_ref(), "")) {
+                                            match path_readline.readline_with_initial(
+                                                "edit> ",
+                                                (&self.vars[num].as_ref(), ""),
+                                            ) {
                                                 Ok(edited_path) => {
                                                     self.vars[num] = edited_path.trim().to_owned();
                                                 }
@@ -123,8 +124,8 @@ impl SimpleEditor {
                                                 msg = Some("That number is not valid.")
                                             }
                                         }
-                                    }
-//
+                                    },
+                                    //
                                     Err(..) => {}
                                 }
                             }
@@ -133,11 +134,10 @@ impl SimpleEditor {
                         }
                     }
                 },
-                Err(..) => break
+                Err(..) => break,
             }
         }
 
         None
     }
 }
-
