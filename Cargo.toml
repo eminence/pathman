@@ -1,0 +1,13 @@
+[package]
+name = "pathman"
+version = "0.1.0"
+authors = ["Andrew Chin <achin@eminence32.net>"]
+
+[dependencies]
+setenv = "*"
+clap = "*"
+term = "*"
+rustyline = {git="https://github.com/eminence/rustyline", branch="no_err_completion"}
+
+[target.'cfg(windows)'.dependencies]
+winapi = "*"
