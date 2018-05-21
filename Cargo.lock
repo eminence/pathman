@@ -121,7 +121,7 @@ dependencies = [
 [[package]]
 name = "rustyline"
 version = "1.0.0"
-source = "git+https://github.com/eminence/rustyline?branch=no_err_completion#abcbf150984c0cc38f5529318488596493ea7c7c"
+source = "git+https://github.com/eminence/rustyline?branch=no_err_completion#ae491ef7b17e030b24fc50b21d31a69aeaf98720"
 dependencies = [
  "libc 0.2.40 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
