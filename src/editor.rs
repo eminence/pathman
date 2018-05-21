@@ -1,9 +1,28 @@
 use rustyline::{self, config};
 use std::path::Path;
 use term;
+use std::hash::Hash;
 
 pub struct SimpleEditor {
     vars: Vec<String>,
+}
+
+/// Returns a list of indecies of the duplicates
+fn find_dups<T: Eq + Hash>(vec: &[T]) -> Vec<usize> {
+    // convert into
+    use std::collections::HashMap;
+
+    //                       (index,      count)
+    let mut map: HashMap<&T, (Vec<usize>, usize)> = HashMap::new();
+    for (idx, elem ) in vec.iter().enumerate() {
+        let count = map.entry(elem).or_insert((vec!(), 0));
+        count.0.push(idx);
+        count.1 += 1;
+    }
+
+    // get the index of all entries with a count greater than 1
+    let result = map.drain().flat_map(|(_, (idx, count))|  if count > 1 { idx } else {vec!()}).collect();
+    result
 }
 
 impl SimpleEditor {
@@ -34,17 +53,21 @@ impl SimpleEditor {
             writeln!(stderr).unwrap();
             writeln!(stderr).unwrap();
 
+            let dups = find_dups(&self.vars);
+
             for (idx, var) in self.vars.iter().enumerate() {
                 let path = Path::new(&var);
-                let flags = match path.exists() {
-                    true => "",
-                    false => "del",
+                let flags = match (path.exists(), idx) {
+                    (false, _) => "del",
+                    (_, idx) if dups.contains(&idx) => "dup",
+                    (..) => ""
                 };
 
-                match (highlight, path.exists()) {
-                    (Some(c),_) if c == idx => stderr.fg(term::color::CYAN).unwrap(),
-                    (_, false) => stderr.fg(term::color::RED).unwrap(),
-                    (_, _) => {}
+                match (highlight, path.exists(), idx) {
+                    (Some(c),_, _) if c == idx => stderr.fg(term::color::CYAN).unwrap(),
+                    (_, false, _) => stderr.fg(term::color::RED).unwrap(),
+                    (_, _, n) if dups.contains(&n) => stderr.fg(term::color::YELLOW).unwrap(),
+                    (..) => {}
                 }
 
                 writeln!(stderr, "{: <5} {: >2}. {}", flags, idx, var).unwrap();
@@ -177,5 +200,21 @@ impl SimpleEditor {
         }
 
         None
+    }
+}
+
+
+#[cfg(test)]
+mod test {
+    use super::find_dups;
+
+    #[test]
+    fn find_deups() {
+        let v = vec!(1,2,3,4,5);
+        assert_eq!(find_dups(&v), vec!());
+        //                     0 1 2 3 4 5 6 7
+        let v = vec!(1,1,2,2,3,4,5,1);
+        assert_eq!(find_dups(&v), vec!(0,1,7,2,3));
+
     }
 }
