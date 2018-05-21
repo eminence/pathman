@@ -25,6 +25,19 @@ fn find_dups<T: Eq + Hash>(vec: &[T]) -> Vec<usize> {
     result
 }
 
+/// Dedup a vector, keeping only the first duplicate
+fn remove_dups<T: Eq>(vec: Vec<T>) -> Vec<T> {
+    let mut new = Vec::with_capacity(vec.len());
+
+    for e in vec {
+        if !new.contains(&e) {
+            new.push(e);
+        }
+    }
+
+    new
+}
+
 impl SimpleEditor {
     pub fn new(vars: Vec<String>) -> SimpleEditor {
         SimpleEditor { vars }
@@ -94,6 +107,7 @@ impl SimpleEditor {
                     "Edit/move entry: 0-{}.  New entry: n.  Save: s.  Quit: q",
                     self.vars.len() - 1
                 ).unwrap();
+                writeln!(stderr, "Remove duplicates: dd.").unwrap();
             } else {
                 writeln!(stderr,"New entry: n.  Quit: q").unwrap();
             }
@@ -104,6 +118,11 @@ impl SimpleEditor {
                 Ok(s) => match s.trim() {
                     "q" => break,
                     "s" => return Some(self.vars),
+                    "dd" => {
+                        self.vars = remove_dups(self.vars);
+                        msg = Some("Duplicate entries removed");
+                        msg_color = Some(term::color::GREEN);
+                    }
                     "n" => {
                         writeln!(stderr,"Enter new path (or just press enter to cancel)").unwrap();
                         match path_readline.readline("new> ") {
@@ -206,15 +225,36 @@ impl SimpleEditor {
 
 #[cfg(test)]
 mod test {
-    use super::find_dups;
+    use super::{find_dups, remove_dups};
+    use ::std::collections::HashSet;
+    use ::std::hash::Hash;
+
+    fn vec_to_set<T: Eq + Hash>(v: Vec<T>) -> HashSet<T> {
+        let mut set = HashSet::new();
+        for e in v {
+            set.insert(e);
+        }
+        set
+    }
 
     #[test]
-    fn find_deups() {
+    fn test_find_deups() {
         let v = vec!(1,2,3,4,5);
         assert_eq!(find_dups(&v), vec!());
         //                     0 1 2 3 4 5 6 7
         let v = vec!(1,1,2,2,3,4,5,1);
-        assert_eq!(find_dups(&v), vec!(0,1,7,2,3));
+        assert_eq!(vec_to_set(find_dups(&v)), vec_to_set(vec!(0,1,7,2,3)));
+
+    }
+
+    #[test]
+    fn test_remove_dups() {
+        let v = vec!(1,2,3,4,5);
+        assert_eq!(remove_dups(v.clone()), v);
+        
+        let v = vec!(1,1,2,3,1,2,4,5,5,2,4);
+        assert_eq!(remove_dups(v.clone()), vec!(1,2,3,4,5));
+
 
     }
 }
