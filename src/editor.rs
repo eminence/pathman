@@ -85,7 +85,7 @@ impl SimpleEditor {
                 };
 
                 match (highlight, path.exists(), idx) {
-                    (Some(c),_, _) if c == idx => stderr.fg(term::color::CYAN).unwrap(),
+                    (Some(c),_, _) if c == idx => stderr.fg(term::color::MAGENTA).unwrap(),
                     (_, false, _) => stderr.fg(term::color::RED).unwrap(),
                     (_, _, n) if dups.contains(&n) => stderr.fg(term::color::YELLOW).unwrap(),
                     (..) => {}
@@ -139,7 +139,7 @@ impl SimpleEditor {
                                 {
                                     let path = Path::new(&new_path);
                                     if !path.exists() {
-                                        msg_color = Some(term::color::MAGENTA);
+                                        msg_color = Some(term::color::YELLOW);
                                         msg = Some("Warning: this path doesn't exist!");
                                     }
                                 }
