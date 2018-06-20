@@ -38,6 +38,14 @@ fn remove_dups<T: Eq>(vec: Vec<T>) -> Vec<T> {
     new
 }
 
+fn remove_nonexistent<T: AsRef<Path>>(vec: Vec<T>) -> Vec<T> {
+    vec.into_iter().filter(|s| {
+        let p: &Path = s.as_ref();
+        p.exists()
+    }).collect()
+
+}
+
 impl SimpleEditor {
     pub fn new(vars: Vec<String>) -> SimpleEditor {
         SimpleEditor { vars }
@@ -102,12 +110,12 @@ impl SimpleEditor {
 
             writeln!(stderr).unwrap();
             stderr.fg(term::color::CYAN).unwrap();
-            if self.vars.len() > 0 {
+            if !self.vars.is_empty() {
                 writeln!(stderr,
                     "Edit/move entry: 0-{}.  New entry: n.  Save: s.  Quit: q",
                     self.vars.len() - 1
                 ).unwrap();
-                writeln!(stderr, "Remove duplicates: dd.").unwrap();
+                writeln!(stderr, "Remove duplicates and not-existent paths: dd.").unwrap();
             } else {
                 writeln!(stderr,"New entry: n.  Quit: q").unwrap();
             }
@@ -120,7 +128,8 @@ impl SimpleEditor {
                     "s" => return Some(self.vars),
                     "dd" => {
                         self.vars = remove_dups(self.vars);
-                        msg = Some("Duplicate entries removed");
+                        self.vars = remove_nonexistent(self.vars);
+                        msg = Some("Duplicate and non-existent entries removed");
                         msg_color = Some(term::color::GREEN);
                     }
                     "n" => {
