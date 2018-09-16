@@ -5,7 +5,7 @@ extern crate term;
 
 use std::env;
 
-use clap::{App, Arg, AppSettings};
+use clap::{App, AppSettings, Arg};
 
 mod editor;
 
@@ -22,8 +22,7 @@ fn main() {
                 .takes_value(true)
                 .default_value(if cfg!(windows) { ";" } else { ":" })
                 .help("Separator character"),
-        )
-        .arg(
+        ).arg(
             Arg::with_name("shell")
                 .long("shell")
                 .takes_value(true)
@@ -31,19 +30,18 @@ fn main() {
                     "What shell to use (autodetected as {:?})",
                     shell.get_name()
                 )),
-        )
-        .arg(
+        ).arg(
             Arg::with_name("var")
                 .required(true)
                 .help("Environment variable to edit"),
-        )
-        .get_matches_safe().unwrap_or_else(|e| {
+        ).get_matches_safe()
+        .unwrap_or_else(|e| {
             use std::io::Write;
             let mut stderr = std::io::stderr();
-            let _  = writeln!(stderr, "{}", e.message);
+            let _ = writeln!(stderr, "{}", e.message);
 
             std::process::exit(1);
-    });
+        });
 
     let var_name = matches.value_of("var").unwrap(); // not panicing, as clap ensure a value
 
