@@ -7,7 +7,7 @@ authors = ["Andrew Chin <achin@eminence32.net>"]
 setenv = "*"
 clap = "*"
 term = "*"
-rustyline = {git="https://github.com/eminence/rustyline", branch="no_err_completion"}
+rustyline = {git="https://github.com/kkawakam/rustyline", branch="master"}
 
 [target.'cfg(windows)'.dependencies]
 winapi = "*"

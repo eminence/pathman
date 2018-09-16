@@ -1,4 +1,9 @@
-use rustyline::{self, config};
+use rustyline::{self, config, Helper};
+use rustyline::config::CompletionType;
+use rustyline::hint::Hinter;
+use rustyline::highlight::Highlighter;
+use rustyline::completion::{Completer, FilenameCompleter, Pair};
+use rustyline::line_buffer::LineBuffer;
 use std::path::Path;
 use term;
 use std::hash::Hash;
@@ -46,6 +51,34 @@ fn remove_nonexistent<T: AsRef<Path>>(vec: Vec<T>) -> Vec<T> {
 
 }
 
+struct MyHelper(FilenameCompleter);
+impl MyHelper {
+    fn new() -> MyHelper {
+        MyHelper(FilenameCompleter::new())
+    }
+}
+
+impl Completer for MyHelper {
+    type Candidate = Pair;
+    fn complete( &self, line: &str, pos: usize) -> rustyline::Result<(usize, Vec<Self::Candidate>)>
+    {
+        self.0.complete(line, pos)
+    }
+    fn update(&self, line: &mut LineBuffer, start: usize, elected: &str)
+    {
+        self.0.update(line, start, elected)
+    }
+}
+
+impl Hinter for MyHelper {
+    fn hint(&self, _line: &str, _pos: usize) -> Option<String> {
+        None
+    }
+}
+
+impl Highlighter for MyHelper {}
+impl Helper for MyHelper {}
+
 impl SimpleEditor {
     pub fn new(vars: Vec<String>) -> SimpleEditor {
         SimpleEditor { vars }
@@ -58,11 +91,14 @@ impl SimpleEditor {
         );
 
         let mut path_readline = rustyline::Editor::with_config(
-            rustyline::Config::builder().auto_add_history(true).output_stream(config::OutputStreamType::Stderr).build(),
+            rustyline::Config::builder()
+            .auto_add_history(true)
+            .completion_type(CompletionType::List)
+            .output_stream(config::OutputStreamType::Stderr)
+            .build(),
         );
 
-        let c = rustyline::completion::FilenameCompleter::new();
-        path_readline.set_helper(Some((c, ())));
+        path_readline.set_helper(Some(MyHelper::new()));
 
         let mut msg: Option<&'static str> = None;
         let mut msg_color: Option<term::color::Color> = None;
