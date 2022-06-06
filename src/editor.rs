@@ -3,6 +3,7 @@ use rustyline::config::CompletionType;
 use rustyline::highlight::Highlighter;
 use rustyline::hint::Hinter;
 use rustyline::line_buffer::LineBuffer;
+use rustyline::validate::Validator;
 use rustyline::{self, config, Helper};
 use std::hash::Hash;
 use std::path::Path;
@@ -63,22 +64,31 @@ impl MyHelper {
 
 impl Completer for MyHelper {
     type Candidate = Pair;
-    fn complete(&self, line: &str, pos: usize) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
-        self.0.complete(line, pos)
+
+    fn complete(
+        &self, // FIXME should be `&mut self`
+        line: &str,
+        pos: usize,
+        ctx: &rustyline::Context<'_>,
+    ) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
+       self.0.complete(line, pos, ctx)
     }
+
     fn update(&self, line: &mut LineBuffer, start: usize, elected: &str) {
         self.0.update(line, start, elected)
     }
 }
 
 impl Hinter for MyHelper {
-    fn hint(&self, _line: &str, _pos: usize) -> Option<String> {
-        None
-    }
+    type Hint = String;
 }
 
 impl Highlighter for MyHelper {}
 impl Helper for MyHelper {}
+
+impl Validator for MyHelper {
+
+}
 
 impl SimpleEditor {
     pub fn new(vars: Vec<String>) -> SimpleEditor {

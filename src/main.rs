@@ -12,12 +12,18 @@ mod editor;
 fn main() {
     let shell = setenv::get_shell();
 
+    let shell_help_text = format!(
+        "What shell to use (autodetected as {:?})",
+        shell.get_name()
+    );
+
+
     let matches = App::new("pathman")
         .setting(AppSettings::DisableHelpSubcommand)
         .setting(AppSettings::DisableVersion)
         .arg(
             Arg::with_name("sep")
-                .short("s")
+                .short('s')
                 .long("separator")
                 .takes_value(true)
                 .default_value(if cfg!(windows) { ";" } else { ":" })
@@ -26,10 +32,7 @@ fn main() {
             Arg::with_name("shell")
                 .long("shell")
                 .takes_value(true)
-                .help(&format!(
-                    "What shell to use (autodetected as {:?})",
-                    shell.get_name()
-                )),
+                .help(shell_help_text.as_str()),
         ).arg(
             Arg::with_name("var")
                 .required(true)
@@ -38,7 +41,7 @@ fn main() {
         .unwrap_or_else(|e| {
             use std::io::Write;
             let mut stderr = std::io::stderr();
-            let _ = writeln!(stderr, "{}", e.message);
+            let _ = writeln!(stderr, "{}", e);
 
             std::process::exit(1);
         });
