@@ -3,8 +3,9 @@ use rustyline::config::CompletionType;
 use rustyline::highlight::Highlighter;
 use rustyline::hint::Hinter;
 use rustyline::line_buffer::LineBuffer;
+use rustyline::{self, Changeset, Helper};
+use rustyline::history::FileHistory;
 use rustyline::validate::Validator;
-use rustyline::{self, config, Helper};
 use std::hash::Hash;
 use std::path::Path;
 use term;
@@ -74,8 +75,8 @@ impl Completer for MyHelper {
        self.0.complete(line, pos, ctx)
     }
 
-    fn update(&self, line: &mut LineBuffer, start: usize, elected: &str) {
-        self.0.update(line, start, elected)
+    fn update(&self, line: &mut LineBuffer, start: usize, elected: &str, cl: &mut Changeset) {
+        self.0.update(line, start, elected, cl)
     }
 }
 
@@ -97,20 +98,18 @@ impl SimpleEditor {
     pub fn run(mut self) -> Option<Vec<String>> {
         // we have 2 readline editors, one for path inputs, and one for everything else
 
-        let mut readline = rustyline::Editor::<()>::with_config(
+        let mut readline = rustyline::Editor::<(), FileHistory>::with_config(
             rustyline::Config::builder()
                 .auto_add_history(false)
-                .output_stream(config::OutputStreamType::Stderr)
                 .build(),
-        );
+        ).unwrap();
 
         let mut path_readline = rustyline::Editor::with_config(
             rustyline::Config::builder()
                 .auto_add_history(true)
                 .completion_type(CompletionType::List)
-                .output_stream(config::OutputStreamType::Stderr)
                 .build(),
-        );
+        ).unwrap();
 
         path_readline.set_helper(Some(MyHelper::new()));
 
