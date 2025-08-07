@@ -5,9 +5,9 @@ authors = ["Andrew Chin <achin@eminence32.net>"]
 
 [dependencies]
 setenv = "*"
-clap = "*"
-term = "*"
-rustyline = { version = "9.1.2" }
+clap = "4.5.43"
+term = "1.1.0"
+rustyline = { version = "17.0.0" }
 
 [target.'cfg(windows)'.dependencies]
 winapi = "*"

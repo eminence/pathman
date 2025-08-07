@@ -5,7 +5,7 @@ extern crate term;
 
 use std::env;
 
-use clap::{App, AppSettings, Arg};
+use clap::{Command, Arg};
 
 mod editor;
 
@@ -18,26 +18,24 @@ fn main() {
     );
 
 
-    let matches = App::new("pathman")
-        .setting(AppSettings::DisableHelpSubcommand)
-        .setting(AppSettings::DisableVersion)
+    let matches = Command::new("pathman")
+        .disable_help_subcommand(true)
+        .disable_version_flag(true)
         .arg(
-            Arg::with_name("sep")
+            Arg::new("sep")
                 .short('s')
                 .long("separator")
-                .takes_value(true)
                 .default_value(if cfg!(windows) { ";" } else { ":" })
                 .help("Separator character"),
         ).arg(
-            Arg::with_name("shell")
+            Arg::new("shell")
                 .long("shell")
-                .takes_value(true)
-                .help(shell_help_text.as_str()),
+                .help(shell_help_text),
         ).arg(
-            Arg::with_name("var")
+            Arg::new("var")
                 .required(true)
                 .help("Environment variable to edit"),
-        ).get_matches_safe()
+        ).try_get_matches()
         .unwrap_or_else(|e| {
             use std::io::Write;
             let mut stderr = std::io::stderr();
@@ -46,9 +44,9 @@ fn main() {
             std::process::exit(1);
         });
 
-    let var_name = matches.value_of("var").unwrap(); // not panicing, as clap ensure a value
+    let var_name = matches.get_one::<String>("var").unwrap(); // not panicing, as clap ensure a value
 
-    let sep_char = matches.value_of("sep").unwrap(); // not panicing, as clap ensures a value
+    let sep_char = matches.get_one::<String>("sep").unwrap(); // not panicing, as clap ensures a value
 
     let path_list = if let Ok(path_val) = env::var(var_name) {
         path_val
