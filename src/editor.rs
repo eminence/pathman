@@ -2,10 +2,10 @@ use rustyline::completion::{Completer, FilenameCompleter, Pair};
 use rustyline::config::CompletionType;
 use rustyline::highlight::Highlighter;
 use rustyline::hint::Hinter;
-use rustyline::line_buffer::LineBuffer;
-use rustyline::{self, Changeset, Helper};
 use rustyline::history::FileHistory;
+use rustyline::line_buffer::LineBuffer;
 use rustyline::validate::Validator;
+use rustyline::{self, Changeset, Helper};
 use std::hash::Hash;
 use std::path::Path;
 use term;
@@ -53,7 +53,8 @@ fn remove_nonexistent<T: AsRef<Path>>(vec: Vec<T>) -> Vec<T> {
         .filter(|s| {
             let p: &Path = s.as_ref();
             p.exists()
-        }).collect()
+        })
+        .collect()
 }
 
 struct MyHelper(FilenameCompleter);
@@ -72,7 +73,7 @@ impl Completer for MyHelper {
         pos: usize,
         ctx: &rustyline::Context<'_>,
     ) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
-       self.0.complete(line, pos, ctx)
+        self.0.complete(line, pos, ctx)
     }
 
     fn update(&self, line: &mut LineBuffer, start: usize, elected: &str, cl: &mut Changeset) {
@@ -87,9 +88,7 @@ impl Hinter for MyHelper {
 impl Highlighter for MyHelper {}
 impl Helper for MyHelper {}
 
-impl Validator for MyHelper {
-
-}
+impl Validator for MyHelper {}
 
 impl SimpleEditor {
     pub fn new(vars: Vec<String>) -> SimpleEditor {
@@ -99,17 +98,17 @@ impl SimpleEditor {
         // we have 2 readline editors, one for path inputs, and one for everything else
 
         let mut readline = rustyline::Editor::<(), FileHistory>::with_config(
-            rustyline::Config::builder()
-                .auto_add_history(false)
-                .build(),
-        ).unwrap();
+            rustyline::Config::builder().auto_add_history(false).build(),
+        )
+        .unwrap();
 
         let mut path_readline = rustyline::Editor::with_config(
             rustyline::Config::builder()
                 .auto_add_history(true)
                 .completion_type(CompletionType::List)
                 .build(),
-        ).unwrap();
+        )
+        .unwrap();
 
         path_readline.set_helper(Some(MyHelper::new()));
 
@@ -163,7 +162,8 @@ impl SimpleEditor {
                     stderr,
                     "Edit/move entry: 0-{}.  New entry: n.  Save: s.  Quit: q",
                     self.vars.len() - 1
-                ).unwrap();
+                )
+                .unwrap();
                 writeln!(stderr, "Remove duplicates and not-existent paths: dd.").unwrap();
             } else {
                 writeln!(stderr, "New entry: n.  Quit: q").unwrap();

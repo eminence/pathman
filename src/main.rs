@@ -5,18 +5,14 @@ extern crate term;
 
 use std::env;
 
-use clap::{Command, Arg};
+use clap::{Arg, Command};
 
 mod editor;
 
 fn main() {
     let shell = setenv::get_shell();
 
-    let shell_help_text = format!(
-        "What shell to use (autodetected as {:?})",
-        shell.get_name()
-    );
-
+    let shell_help_text = format!("What shell to use (autodetected as {:?})", shell.get_name());
 
     let matches = Command::new("pathman")
         .disable_help_subcommand(true)
@@ -27,15 +23,14 @@ fn main() {
                 .long("separator")
                 .default_value(if cfg!(windows) { ";" } else { ":" })
                 .help("Separator character"),
-        ).arg(
-            Arg::new("shell")
-                .long("shell")
-                .help(shell_help_text),
-        ).arg(
+        )
+        .arg(Arg::new("shell").long("shell").help(shell_help_text))
+        .arg(
             Arg::new("var")
                 .required(true)
                 .help("Environment variable to edit"),
-        ).try_get_matches()
+        )
+        .try_get_matches()
         .unwrap_or_else(|e| {
             use std::io::Write;
             let mut stderr = std::io::stderr();
