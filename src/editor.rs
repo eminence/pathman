@@ -36,7 +36,7 @@ fn find_dups<T: Eq + Hash>(vec: &[T]) -> Vec<usize> {
 }
 
 /// Dedup a vector, keeping only the first duplicate
-fn remove_dups<T: Eq>(vec: Vec<T>) -> Vec<T> {
+pub fn remove_dups<T: Eq>(vec: Vec<T>) -> Vec<T> {
     let mut new = Vec::with_capacity(vec.len());
 
     for e in vec {
@@ -48,7 +48,7 @@ fn remove_dups<T: Eq>(vec: Vec<T>) -> Vec<T> {
     new
 }
 
-fn remove_nonexistent<T: AsRef<Path>>(vec: Vec<T>) -> Vec<T> {
+pub fn remove_nonexistent<T: AsRef<Path>>(vec: Vec<T>) -> Vec<T> {
     vec.into_iter()
         .filter(|s| {
             let p: &Path = s.as_ref();
