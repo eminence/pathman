@@ -5,7 +5,7 @@ extern crate term;
 
 use std::env;
 
-use clap::{Arg, Command};
+use clap::{Arg, ArgAction, Command};
 
 mod editor;
 
@@ -17,6 +17,12 @@ fn main() {
     let matches = Command::new("pathman")
         .disable_help_subcommand(true)
         .disable_version_flag(true)
+        .arg(
+            Arg::new("cleanup")
+                .long("cleanup")
+                .action(ArgAction::SetTrue)
+                .help("Automatically clean up the path"),
+        )
         .arg(
             Arg::new("sep")
                 .short('s')
@@ -54,14 +60,23 @@ fn main() {
         Vec::new()
     };
 
-    let editor = editor::SimpleEditor::new(path_list);
-    if let Some(v) = editor.run() {
-        let new_val = v.join(sep_char);
+    if *matches.get_one::<bool>("cleanup").unwrap() {
+        let cleaned_path = editor::remove_nonexistent(path_list);
+        let cleaned_path = editor::remove_dups(cleaned_path);
+
+        let new_val = cleaned_path.join(sep_char);
         shell.setenv(var_name, &new_val);
-        eprintln!();
-        eprintln!("{} environment variable updated", var_name);
+        eprintln!("{} environment variable cleaned up", var_name);
     } else {
-        eprintln!();
-        eprintln!("{} environment variable unchanged.", var_name);
+        let editor = editor::SimpleEditor::new(path_list);
+        if let Some(v) = editor.run() {
+            let new_val = v.join(sep_char);
+            shell.setenv(var_name, &new_val);
+            eprintln!();
+            eprintln!("{} environment variable updated", var_name);
+        } else {
+            eprintln!();
+            eprintln!("{} environment variable unchanged.", var_name);
+        }
     }
 }
