@@ -1,5 +1,5 @@
 use rustyline::completion::{Completer, FilenameCompleter, Pair};
-use rustyline::config::CompletionType;
+use rustyline::config::{CompletionType, OutputStreamType};
 use rustyline::highlight::Highlighter;
 use rustyline::hint::Hinter;
 use rustyline::history::FileHistory;
@@ -98,7 +98,10 @@ impl SimpleEditor {
         // we have 2 readline editors, one for path inputs, and one for everything else
 
         let mut readline = rustyline::Editor::<(), FileHistory>::with_config(
-            rustyline::Config::builder().auto_add_history(false).build(),
+            rustyline::Config::builder()
+                .auto_add_history(false)
+                .output_stream(OutputStreamType::Stderr)
+                .build(),
         )
         .unwrap();
 
@@ -106,6 +109,7 @@ impl SimpleEditor {
             rustyline::Config::builder()
                 .auto_add_history(true)
                 .completion_type(CompletionType::List)
+                .output_stream(OutputStreamType::Stderr)
                 .build(),
         )
         .unwrap();
